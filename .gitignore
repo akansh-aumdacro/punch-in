@@ -5,7 +5,9 @@ build/
 .env.local
 .env.*.local
 server/uploads/
+server/models/
 *.log
 .DS_Store
 .vscode/
 .idea/
+.claude/

@@ -59,7 +59,7 @@ function exportCsv(res, timesheets) {
 
 async function exportXlsx(res, timesheets, org) {
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Truein';
+  wb.creator = 'PunchIn';
   wb.created = new Date();
   const ws = wb.addWorksheet('Timesheets');
 
@@ -123,7 +123,7 @@ function exportPdf(res, timesheets, org) {
   res.setHeader('Content-Disposition', `attachment; filename="timesheets-${Date.now()}.pdf"`);
   doc.pipe(res);
 
-  doc.fontSize(18).text(org?.name || 'Truein', { align: 'left' });
+  doc.fontSize(18).text(org?.name || 'PunchIn', { align: 'left' });
   doc.fontSize(11).fillColor('#666').text(`Timesheet Export — ${format(new Date(), 'yyyy-MM-dd')}`);
   doc.moveDown(0.5);
   doc.fillColor('#000');

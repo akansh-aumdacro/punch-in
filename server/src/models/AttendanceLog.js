@@ -20,6 +20,9 @@ const attendanceLogSchema = new mongoose.Schema(
     clockInLng: { type: Number, default: null },
     gpsVerified: { type: Boolean, default: false },
     faceMatchScore: { type: Number, default: null },
+    // True only when this punch-in passed backend face verification. Records
+    // created via face method are never persisted unless this is true.
+    faceVerified: { type: Boolean, default: false },
     deviceId: { type: String, default: null },
     anomalyFlags: [{ type: String }],
     status: {

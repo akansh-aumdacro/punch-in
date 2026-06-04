@@ -215,18 +215,18 @@ function ConfigureModal({ integration, initial, onClose, onSave }) {
             <table className="min-w-full text-xs border rounded">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
-                  <th className="px-3 py-1.5 text-left">Truein field</th>
+                  <th className="px-3 py-1.5 text-left">PunchIn field</th>
                   <th className="px-3 py-1.5 text-left">{integration.name} field</th>
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(mapping).map(([truein, vendor]) => (
-                  <tr key={truein} className="border-t">
-                    <td className="px-3 py-1.5 text-slate-700">{truein}</td>
+                {Object.entries(mapping).map(([field, vendor]) => (
+                  <tr key={field} className="border-t">
+                    <td className="px-3 py-1.5 text-slate-700">{field}</td>
                     <td className="px-3 py-1.5">
                       <input
                         value={vendor}
-                        onChange={(e) => setMapping((m) => ({ ...m, [truein]: e.target.value }))}
+                        onChange={(e) => setMapping((m) => ({ ...m, [field]: e.target.value }))}
                         className="w-full px-2 py-1 border border-slate-200 rounded"
                       />
                     </td>

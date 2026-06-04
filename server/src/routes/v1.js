@@ -158,7 +158,7 @@ router.post('/webhooks', async (req, res, next) => {
         active: hook.active,
       },
       secret,
-      note: 'Save this secret — it is not retrievable again. Verify X-Truein-Signature using HMAC-SHA256(secret, raw body).',
+      note: 'Save this secret — it is not retrievable again. Verify X-PunchIn-Signature using HMAC-SHA256(secret, raw body).',
     });
   } catch (err) { next(err); }
 });

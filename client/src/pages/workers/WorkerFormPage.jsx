@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ScanFace } from 'lucide-react';
 
 import { workersApi } from '../../api/workers';
 import { sitesApi } from '../../api/sites';
@@ -116,6 +116,26 @@ export default function WorkerFormPage() {
       <h1 className="text-2xl font-bold text-slate-800 mt-2">
         {isEdit ? 'Edit Worker' : 'Add Worker'}
       </h1>
+
+      {isEdit && (
+        <div className="mt-4 flex items-center justify-between max-w-3xl rounded-lg border border-slate-200 bg-white p-4">
+          <div className="text-sm">
+            <div className="font-medium text-slate-800">Face enrollment</div>
+            <div className="text-slate-500">
+              {workerQuery.data?.worker?.biometricEnrolled
+                ? 'This employee has a registered face for verified punch-in.'
+                : 'Register this employee\'s face to enable verified punch-in.'}
+            </div>
+          </div>
+          <Link
+            to={`/face/enroll?userId=${id}`}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-slate-300 text-sm hover:bg-slate-50"
+          >
+            <ScanFace size={16} />
+            {workerQuery.data?.worker?.biometricEnrolled ? 'Re-enroll face' : 'Enroll face'}
+          </Link>
+        </div>
+      )}
 
       <form
         onSubmit={handleSubmit((vals) => mutation.mutate(vals))}

@@ -1,4 +1,4 @@
-# Truein
+# PunchIn
 
 AI-powered Time & Attendance for contract and multi-site workforces. Built as a full-stack MERN application.
 
@@ -32,8 +32,8 @@ AI-powered Time & Attendance for contract and multi-site workforces. Built as a 
 ### 1. Clone & configure
 
 ```bash
-git clone <repo> truein
-cd truein
+git clone <repo> punchin
+cd punchin
 cp .env.example .env
 # Edit .env — set JWT_SECRET, optional SMTP_*, etc.
 ```
@@ -54,7 +54,7 @@ docker compose exec server node src/scripts/seed.js
 
 This creates:
 
-- 1 organization (**Truein Demo**)
+- 1 organization (**PunchIn Demo**)
 - Users: 1 superadmin, 1 HR, 2 supervisors, 10 workers (mixed permanent / contract)
 - 3 sites with geofences (Bangalore, Mumbai, Pune)
 - 3 shift templates (Morning, Evening, Night)
@@ -113,7 +113,7 @@ Copy `.env.example` to `.env` and adjust:
 ## Project layout
 
 ```
-truein/
+punchin/
 ├── client/                React + Vite + Tailwind
 │   ├── src/
 │   │   ├── api/           axios + per-module clients
@@ -170,15 +170,15 @@ Available endpoints:
 
 Register a URL to receive POST callbacks for `clock_in`, `clock_out`, `leave_approved`. Each delivery includes:
 
-- Header `X-Truein-Signature: sha256=<hex>` — HMAC over the raw body using the secret returned at webhook creation time.
-- Header `X-Truein-Webhook-Id: <webhook-id>`.
+- Header `X-PunchIn-Signature: sha256=<hex>` — HMAC over the raw body using the secret returned at webhook creation time.
+- Header `X-PunchIn-Webhook-Id: <webhook-id>`.
 
 Verify the signature server-side before trusting the payload.
 
 ## Final command
 
 ```bash
-cd truein && docker compose up --build
+cd punchin && docker compose up --build
 ```
 
 Then visit <http://localhost>, log in as `admin@truein.demo / admin1234` after seeding, or register a fresh organization at `/register`.

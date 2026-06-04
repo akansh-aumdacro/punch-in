@@ -5,6 +5,7 @@ const AttendanceLog = require('../models/AttendanceLog');
 const User = require('../models/User');
 const Site = require('../models/Site');
 const attendanceService = require('../services/attendanceService');
+const faceVerificationService = require('../services/faceVerificationService');
 
 function bailOnValidation(req, res) {
   const errors = validationResult(req);
@@ -33,14 +34,9 @@ function endOfDay(d = new Date()) {
 }
 
 function sendAttendanceError(res, err) {
-  if (err && err.name === 'AttendanceError') {
-    return res.status(err.status || 400).json({
-      error: err.message,
-      code: err.code,
-      ...(err.meta ? { meta: err.meta } : {}),
-    });
-  }
-  if (err && err.constructor && err.constructor.name === 'AttendanceError') {
+  // Both AttendanceError and FaceError carry { status, code, message, meta? }
+  // and are safe to surface to the client verbatim.
+  if (err && (err.name === 'AttendanceError' || err.name === 'FaceError')) {
     return res.status(err.status || 400).json({
       error: err.message,
       code: err.code,
@@ -67,9 +63,8 @@ exports.clockIn = async (req, res, next) => {
       method,
       lat,
       lng,
-      faceMatchScore,
       deviceId,
-      faceImageBase64, // accepted but not persisted in MVP — wire face match here
+      faceImageBase64,
     } = req.body;
 
     const targetUserId = parseObjectId(requestedUserId) || req.user.userId;
@@ -77,9 +72,36 @@ exports.clockIn = async (req, res, next) => {
       return res.status(403).json({ error: 'Cannot clock in for another worker' });
     }
 
-    // Stub face score if an image was supplied but face module isn't wired yet.
-    let resolvedFaceScore = typeof faceMatchScore === 'number' ? faceMatchScore : null;
-    if (resolvedFaceScore == null && faceImageBase64) resolvedFaceScore = 1;
+    const resolvedMethod = method || 'face';
+
+    // -- Face verification gate ------------------------------------------------
+    // For the `face` method, identity MUST be proven on the backend before any
+    // attendance record is created. The client-supplied score is ignored; only
+    // the server's verifyForPunch result is trusted (Security Requirements
+    // #1, #2, #4 — no API bypass). Other methods (qr/nfc/supervisor) skip this.
+    let faceMatchScore = null;
+    let faceVerified = false;
+
+    if (resolvedMethod === 'face') {
+      if (!faceImageBase64) {
+        return res.status(400).json({
+          error: 'A live face image is required for face punch-in',
+          code: 'FACE_IMAGE_REQUIRED',
+        });
+      }
+      // Throws FaceError (NO_FACE / MULTIPLE_FACES / LOW_QUALITY / NO_MATCH /
+      // NOT_ENROLLED / ENGINE_UNAVAILABLE) on failure — caught below and turned
+      // into a clean error response. No attendance record is created.
+      const verification = await faceVerificationService.verifyForPunch({
+        orgId: req.user.orgId,
+        userId: targetUserId,
+        imageBase64: faceImageBase64,
+        ip: req.ip,
+        deviceId: deviceId || null,
+      });
+      faceMatchScore = verification.score;
+      faceVerified = true;
+    }
 
     const mockLocation =
       String(req.headers['x-mock-location'] || '').toLowerCase() === 'true';
@@ -87,15 +109,16 @@ exports.clockIn = async (req, res, next) => {
     const log = await attendanceService.processClockIn({
       userId: targetUserId,
       siteId: parseObjectId(siteId),
-      method: method || 'face',
+      method: resolvedMethod,
       lat: typeof lat === 'number' ? lat : null,
       lng: typeof lng === 'number' ? lng : null,
-      faceMatchScore: resolvedFaceScore,
+      faceMatchScore,
+      faceVerified,
       deviceId: deviceId || null,
       mockLocation,
     });
 
-    res.status(201).json({ log });
+    res.status(201).json({ log, faceMatchScore });
   } catch (err) {
     const handled = sendAttendanceError(res, err);
     if (!handled) next(err);
@@ -426,13 +449,41 @@ exports.syncOfflineQueue = async (req, res, next) => {
           });
           results.push({ ok: true, clientId: p.clientId, logId: String(log._id) });
         } else {
+          const method = p.method || 'face';
+
+          // Face punches queued offline are still verified on the backend at
+          // replay time using the captured image — never trusted blindly.
+          let faceMatchScore = null;
+          let faceVerified = false;
+          if (method === 'face') {
+            if (!p.faceImageBase64) {
+              results.push({
+                ok: false,
+                clientId: p.clientId,
+                error: 'Face image missing for queued face punch',
+                code: 'FACE_IMAGE_REQUIRED',
+              });
+              continue;
+            }
+            const verification = await faceVerificationService.verifyForPunch({
+              orgId: req.user.orgId,
+              userId: targetUserId,
+              imageBase64: p.faceImageBase64,
+              ip: req.ip,
+              deviceId: p.deviceId || null,
+            });
+            faceMatchScore = verification.score;
+            faceVerified = true;
+          }
+
           const log = await attendanceService.processClockIn({
             userId: targetUserId,
             siteId: parseObjectId(p.siteId),
-            method: p.method || 'face',
+            method,
             lat: typeof p.lat === 'number' ? p.lat : null,
             lng: typeof p.lng === 'number' ? p.lng : null,
-            faceMatchScore: typeof p.faceMatchScore === 'number' ? p.faceMatchScore : null,
+            faceMatchScore,
+            faceVerified,
             deviceId: p.deviceId || null,
             mockLocation: Boolean(p.mockLocation),
             clockInAt: p.timestamp || p.time,

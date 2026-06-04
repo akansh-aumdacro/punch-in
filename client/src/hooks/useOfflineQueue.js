@@ -101,7 +101,14 @@ export function useOfflineQueue() {
       // also drop client-error failures (e.g. duplicate, forbidden) so they
       // don't get retried forever.
       const removable = (res.results || []).filter(
-        (r) => r.ok || ['DUPLICATE_CLOCK_IN', 'NO_OPEN_LOG', 'OFF_SITE', 'WORKER_INACTIVE', 'WORKER_NOT_FOUND'].includes(r.code)
+        (r) =>
+          r.ok ||
+          [
+            'DUPLICATE_CLOCK_IN', 'NO_OPEN_LOG', 'OFF_SITE', 'WORKER_INACTIVE', 'WORKER_NOT_FOUND',
+            // Face-verification rejections are terminal — never retry blindly.
+            'NO_MATCH', 'NO_FACE', 'MULTIPLE_FACES', 'LOW_QUALITY', 'NOT_ENROLLED',
+            'FACE_IMAGE_REQUIRED', 'FACE_NOT_VERIFIED',
+          ].includes(r.code)
       );
       await Promise.all(removable.map((r) => dbDelete(r.clientId)));
       await refresh();

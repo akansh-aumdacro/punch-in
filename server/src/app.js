@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'truein-server', time: new Date().toISOString() });
+  res.json({ status: 'ok', service: 'punchin-server', time: new Date().toISOString() });
 });
 
 // ---------- Routes ----------
@@ -29,6 +29,7 @@ app.use('/api/workers', require('./routes/workers'));
 app.use('/api/sites', require('./routes/sites'));
 app.use('/api/agencies', require('./routes/agencies'));
 app.use('/api/attendance', require('./routes/attendance'));
+app.use('/api/face', require('./routes/face'));
 app.use('/api/shifts', require('./routes/shifts'));
 app.use('/api/timesheets', require('./routes/timesheets'));
 app.use('/api/leaves', require('./routes/leaves'));
@@ -68,13 +69,13 @@ if (require.main === module) {
   connectDB()
     .then(() => {
       server.listen(PORT, () => {
-        console.log(`[truein] server listening on http://localhost:${PORT}`);
+        console.log(`[punchin] server listening on http://localhost:${PORT}`);
       });
       reportScheduler.start();
       aiScheduler.start();
     })
     .catch((err) => {
-      console.error('[truein] failed to start:', err);
+      console.error('[punchin] failed to start:', err);
       process.exit(1);
     });
 }

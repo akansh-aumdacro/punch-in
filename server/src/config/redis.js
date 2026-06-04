@@ -31,11 +31,11 @@ function getRedis() {
         ...baseOpts,
       });
 
-  client.on('connect', () => console.log('[truein] redis connected'));
-  client.on('ready', () => console.log('[truein] redis ready'));
-  client.on('error', (err) => console.error('[truein] redis error:', err.message));
-  client.on('end', () => console.warn('[truein] redis connection ended'));
-  client.on('reconnecting', (delay) => console.log(`[truein] redis reconnecting in ${delay}ms`));
+  client.on('connect', () => console.log('[punchin] redis connected'));
+  client.on('ready', () => console.log('[punchin] redis ready'));
+  client.on('error', (err) => console.error('[punchin] redis error:', err.message));
+  client.on('end', () => console.warn('[punchin] redis connection ended'));
+  client.on('reconnecting', (delay) => console.log(`[punchin] redis reconnecting in ${delay}ms`));
 
   return client;
 }

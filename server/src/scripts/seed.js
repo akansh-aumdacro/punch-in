@@ -13,7 +13,7 @@ const LeaveBalance = require('../models/LeaveBalance');
 const AttendanceLog = require('../models/AttendanceLog');
 const Timesheet = require('../models/Timesheet');
 
-const ORG_NAME = 'Truein Demo';
+const ORG_NAME = 'PunchIn Demo';
 const ADMIN_EMAIL = 'admin@truein.demo';
 const ADMIN_PASS = 'admin1234';
 
@@ -43,7 +43,7 @@ async function hash(p) {
 
 async function run() {
   await connectDB();
-  console.log('--- Truein seed ---');
+  console.log('--- PunchIn seed ---');
 
   // Drop existing demo org (and everything inside it).
   const existing = await Organization.findOne({ name: ORG_NAME });

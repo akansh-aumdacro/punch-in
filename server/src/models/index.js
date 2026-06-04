@@ -1,6 +1,7 @@
 module.exports = {
   Organization: require('./Organization'),
   User: require('./User'),
+  Role: require('./Role'),
   BiometricTemplate: require('./BiometricTemplate'),
   Site: require('./Site'),
   Shift: require('./Shift'),
@@ -19,6 +20,7 @@ module.exports = {
   ActivityPunch: require('./ActivityPunch'),
   OvertimeRecord: require('./OvertimeRecord'),
   AuditLog: require('./AuditLog'),
+  VerificationLog: require('./VerificationLog'),
   AnomalyRecord: require('./AnomalyRecord'),
   Notification: require('./Notification'),
   ApiKey: require('./ApiKey'),

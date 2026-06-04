@@ -45,7 +45,7 @@ function exportCsv(res, result, { filename }) {
 
 async function buildXlsxWorkbook(result, { orgName } = {}) {
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Truein';
+  wb.creator = 'PunchIn';
   wb.created = new Date();
   const ws = wb.addWorksheet('Report');
 
@@ -53,7 +53,7 @@ async function buildXlsxWorkbook(result, { orgName } = {}) {
 
   // Title row.
   ws.mergeCells(1, 1, 1, colCount);
-  ws.getCell(1, 1).value = `${orgName || 'Truein'} — ${result.title}`;
+  ws.getCell(1, 1).value = `${orgName || 'PunchIn'} — ${result.title}`;
   ws.getCell(1, 1).font = { size: 14, bold: true, color: { argb: 'FF0F172A' } };
   ws.getCell(1, 1).alignment = { horizontal: 'center' };
   ws.getRow(1).height = 22;
@@ -142,7 +142,7 @@ function writePdf(result, { orgName, target }) {
   doc.pipe(target);
 
   // Header.
-  doc.fontSize(16).fillColor('#0f172a').text(orgName || 'Truein', { continued: false });
+  doc.fontSize(16).fillColor('#0f172a').text(orgName || 'PunchIn', { continued: false });
   doc.fontSize(11).fillColor('#475569').text(result.title);
   const period = formatPeriod(result.period);
   const filters = formatFilters(result.filters);

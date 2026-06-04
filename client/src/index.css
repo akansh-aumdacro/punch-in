@@ -1,3 +1,94 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+  }
+  /* Consistent, modern focus ring across the whole app. */
+  :focus-visible {
+    outline: none;
+    @apply ring-2 ring-indigo-500/50 ring-offset-1 ring-offset-white;
+  }
+}
+
+@layer utilities {
+  /* Soft app surface gradient used behind page content. */
+  .bg-app {
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgba(99, 102, 241, 0.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(168, 85, 247, 0.05), transparent 55%),
+      #f8fafc;
+  }
+}
+
+/* ---------- Custom scrollbars ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.55);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.8);
+  background-clip: content-box;
+}
+
+/* ---------- Reusable animations ---------- */
+
+/* Skeleton shimmer (richer than a flat pulse). */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+/* Lightweight entrance helper for non-Framer components. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+/* ---------- Accessibility: honor reduced-motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

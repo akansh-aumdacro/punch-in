@@ -9,7 +9,7 @@ function errorHandler(err, req, res, next) {
   }
   if (err.errors) payload.errors = err.errors;
 
-  console.error(`[truein] ${status} ${req.method} ${req.originalUrl}:`, err.message);
+  console.error(`[punchin] ${status} ${req.method} ${req.originalUrl}:`, err.message);
   res.status(status).json(payload);
 }
 

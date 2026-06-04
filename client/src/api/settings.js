@@ -16,6 +16,11 @@ export const settingsApi = {
   upsertPolicy: (payload) => api.post('/settings/policies', payload).then((r) => r.data),
   deletePolicy: (id) => api.delete(`/settings/policies/${id}`).then((r) => r.data),
 
+  listRoles: () => api.get('/settings/roles').then((r) => r.data),
+  createRole: (payload) => api.post('/settings/roles', payload).then((r) => r.data),
+  updateRole: (id, payload) => api.patch(`/settings/roles/${id}`, payload).then((r) => r.data),
+  deleteRole: (id) => api.delete(`/settings/roles/${id}`).then((r) => r.data),
+
   listApiKeys: () => api.get('/settings/api-keys').then((r) => r.data),
   createApiKey: (payload) => api.post('/settings/api-keys', payload).then((r) => r.data),
   revokeApiKey: (id) => api.post(`/settings/api-keys/${id}/revoke`).then((r) => r.data),

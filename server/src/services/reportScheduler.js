@@ -45,9 +45,9 @@ async function runOne(sched) {
   if (!recipients) throw new Error('No recipients on schedule');
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || 'Truein <no-reply@truein.app>',
+    from: process.env.SMTP_FROM || 'PunchIn <no-reply@punchin.app>',
     to: recipients,
-    subject: `[Truein] ${result.title} — ${new Date().toISOString().slice(0, 10)}`,
+    subject: `[PunchIn] ${result.title} — ${new Date().toISOString().slice(0, 10)}`,
     text: `Your scheduled ${result.title} report is attached.\n\n` +
       `Period: ${JSON.stringify(result.period)}\n` +
       `Rows: ${result.rows.length}`,
@@ -74,7 +74,7 @@ async function runDueReports() {
       if (!transporter) {
         // No SMTP yet — push nextRunAt forward by 1h so we retry without
         // spinning, but log loudly so it's clear why nothing is going out.
-        console.warn('[truein] scheduled report skipped — SMTP not configured');
+        console.warn('[punchin] scheduled report skipped — SMTP not configured');
         sched.nextRunAt = new Date(Date.now() + 60 * 60 * 1000);
         sched.lastError = 'SMTP not configured';
         await sched.save();
@@ -85,13 +85,13 @@ async function runDueReports() {
       sched.nextRunAt = computeNextRun(sched.frequency, sched.lastRunAt);
       sched.lastError = '';
       await sched.save();
-      console.log(`[truein] scheduled report sent: ${sched.reportType} → ${sched.recipients.join(',')}`);
+      console.log(`[punchin] scheduled report sent: ${sched.reportType} → ${sched.recipients.join(',')}`);
     } catch (err) {
       sched.lastError = err.message || 'Unknown error';
       // Retry in one hour instead of looping immediately.
       sched.nextRunAt = new Date(Date.now() + 60 * 60 * 1000);
       await sched.save();
-      console.error(`[truein] scheduled report failed (${sched._id}):`, err.message);
+      console.error(`[punchin] scheduled report failed (${sched._id}):`, err.message);
     }
   }
 }
@@ -103,12 +103,12 @@ function start() {
 
   // Hourly tick at minute 0.
   cron.schedule('0 * * * *', () => {
-    runDueReports().catch((err) => console.error('[truein] scheduler tick failed:', err.message));
+    runDueReports().catch((err) => console.error('[punchin] scheduler tick failed:', err.message));
   });
   console.log(
     transporter
-      ? '[truein] report scheduler started (hourly tick)'
-      : '[truein] report scheduler started, SMTP not configured — reports will queue but not send'
+      ? '[punchin] report scheduler started (hourly tick)'
+      : '[punchin] report scheduler started, SMTP not configured — reports will queue but not send'
   );
 }
 

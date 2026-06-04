@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import toast from 'react-hot-toast';
-import { Camera, MapPin, Wifi, WifiOff, CheckCircle2, AlertCircle, LogOut as ClockOutIcon } from 'lucide-react';
+import { Camera, MapPin, Wifi, WifiOff, CheckCircle2, AlertCircle, ScanFace, LogOut as ClockOutIcon } from 'lucide-react';
 
 import { attendanceApi } from '../../api/attendance';
 import useGeolocation from '../../hooks/useGeolocation';
@@ -31,6 +32,11 @@ export default function ClockInPage() {
       const faceImageBase64 =
         type === 'clock_in' && webcamRef.current ? webcamRef.current.getScreenshot() : null;
 
+      // Surface the verification step to the user while the backend matches.
+      if (type === 'clock_in') {
+        setResult({ ok: null, message: 'Verifying your face…' });
+      }
+
       const payload = {
         type,
         userId: user?.id,
@@ -54,8 +60,12 @@ export default function ClockInPage() {
 
       try {
         if (type === 'clock_in') {
-          await attendanceApi.clockIn(payload);
-          setResult({ ok: true, message: 'Clocked in successfully' });
+          const res = await attendanceApi.clockIn(payload);
+          const pct =
+            typeof res?.faceMatchScore === 'number'
+              ? ` (${Math.round(res.faceMatchScore * 100)}% match)`
+              : '';
+          setResult({ ok: true, message: `Face verified — clocked in successfully${pct}` });
         } else {
           await attendanceApi.clockOut(payload);
           setResult({ ok: true, message: 'Clocked out successfully' });
@@ -63,14 +73,17 @@ export default function ClockInPage() {
         toast.success(labelFor(type) + ' confirmed');
       } catch (err) {
         const status = err?.response?.status;
+        const code = err?.response?.data?.code;
         const msg = err?.response?.data?.error || err.message || 'Request failed';
         // Network-ish errors → queue for later. Logical 4xx → surface to user.
-        if (!status || status >= 500) {
+        // Face-verification failures are deliberate rejections — never queue them.
+        const isVerificationFailure = status >= 400 && status < 500;
+        if (!status || (status >= 500 && !isVerificationFailure)) {
           await addPunch(payload);
           setResult({ ok: false, message: `Server unreachable — queued for retry` });
           toast('Queued for retry', { icon: '📥' });
         } else {
-          setResult({ ok: false, message: msg });
+          setResult({ ok: false, message: msg, code });
           toast.error(msg);
         }
       } finally {
@@ -143,13 +156,30 @@ export default function ClockInPage() {
         {result && (
           <div
             className={`mt-4 rounded-lg p-4 flex items-start gap-3 animate-in fade-in ${
-              result.ok
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                : 'bg-rose-50 text-rose-800 border border-rose-200'
+              result.ok === null
+                ? 'bg-slate-50 text-slate-700 border border-slate-200'
+                : result.ok
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200'
             }`}
           >
-            {result.ok ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-            <div className="text-sm">{result.message}</div>
+            {result.ok === null ? (
+              <ScanFace size={20} className="animate-pulse" />
+            ) : result.ok ? (
+              <CheckCircle2 size={20} />
+            ) : (
+              <AlertCircle size={20} />
+            )}
+            <div className="text-sm">
+              {result.message}
+              {result.code === 'NOT_ENROLLED' && (
+                <div className="mt-1">
+                  <Link to="/face/enroll" className="font-medium underline">
+                    Enroll your face now →
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

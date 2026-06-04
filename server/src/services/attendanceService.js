@@ -64,6 +64,7 @@ async function processClockIn({
   lat,
   lng,
   faceMatchScore,
+  faceVerified = false,
   deviceId,
   mockLocation = false,
   clockInAt, // optional override for offline-queue replay
@@ -72,6 +73,17 @@ async function processClockIn({
   if (!user) throw new AttendanceError('Worker not found', { status: 404, code: 'WORKER_NOT_FOUND' });
   if (user.status !== 'active') {
     throw new AttendanceError('Worker is inactive', { status: 403, code: 'WORKER_INACTIVE' });
+  }
+
+  // Defence in depth: a `face` punch can only become a record once the caller
+  // has run backend face verification. This guards against any path reaching
+  // this service without going through verifyForPunch (Security Requirement
+  // #2 — "Do not allow attendance creation without successful verification").
+  if (method === 'face' && !faceVerified) {
+    throw new AttendanceError('Face verification required before clock-in', {
+      status: 403,
+      code: 'FACE_NOT_VERIFIED',
+    });
   }
 
   const now = clockInAt ? new Date(clockInAt) : new Date();
@@ -165,6 +177,7 @@ async function processClockIn({
     clockInLng: typeof lng === 'number' ? lng : null,
     gpsVerified,
     faceMatchScore: typeof faceMatchScore === 'number' ? faceMatchScore : null,
+    faceVerified: Boolean(faceVerified),
     deviceId: deviceId || null,
     lateMinutes,
     anomalyFlags,

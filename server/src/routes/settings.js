@@ -7,6 +7,7 @@ const integrationsController = require('../controllers/integrationsController');
 const orgController = require('../controllers/orgController');
 const policyController = require('../controllers/policyController');
 const apiKeyController = require('../controllers/apiKeyController');
+const roleController = require('../controllers/roleController');
 
 const router = express.Router();
 router.use(verifyToken);
@@ -24,6 +25,13 @@ router.post('/org/logo', adminOnly, photoUpload.single('logo'), orgController.up
 router.get('/policies', adminOnly, policyController.list);
 router.post('/policies', adminOnly, policyController.upsert);
 router.delete('/policies/:id', adminOnly, policyController.remove);
+
+// ---- Roles & permissions (RBAC) ----
+// HR/superadmin may view; only superadmin can mutate roles.
+router.get('/roles', adminOnly, roleController.list);
+router.post('/roles', superadminOnly, roleController.create);
+router.patch('/roles/:id', superadminOnly, roleController.update);
+router.delete('/roles/:id', superadminOnly, roleController.remove);
 
 // ---- API keys ----
 router.get('/api-keys', superadminOnly, apiKeyController.list);

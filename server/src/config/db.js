@@ -17,16 +17,16 @@ async function connectDB() {
   mongoose.set('strictQuery', true);
 
   mongoose.connection.on('connected', () => {
-    console.log('[truein] mongo connected:', mongoose.connection.host);
+    console.log('[punchin] mongo connected:', mongoose.connection.host);
   });
   mongoose.connection.on('error', (err) => {
-    console.error('[truein] mongo connection error:', err.message);
+    console.error('[punchin] mongo connection error:', err.message);
   });
   mongoose.connection.on('disconnected', () => {
-    console.warn('[truein] mongo disconnected — driver will retry automatically');
+    console.warn('[punchin] mongo disconnected — driver will retry automatically');
   });
   mongoose.connection.on('reconnected', () => {
-    console.log('[truein] mongo reconnected');
+    console.log('[punchin] mongo reconnected');
   });
 
   // Connect once. The Node.js driver handles automatic reconnects on

@@ -1,20 +1,24 @@
 {
-  "name": "truein-server",
+  "name": "punchin-server",
   "version": "0.1.0",
-  "description": "Truein backend — AI-powered time & attendance API",
+  "description": "PunchIn backend — AI-powered time & attendance API",
   "private": true,
   "main": "src/app.js",
   "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "download-face-models": "node src/scripts/downloadFaceModels.js"
   },
   "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "@vladmandic/face-api": "^1.7.15",
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "csv-parse": "^5.5.6",
+    "date-fns": "^4.4.0",
     "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
     "express": "^4.21.0",

@@ -28,7 +28,7 @@ async function notify({ orgId, userId, type, title, message, link, metadata }) {
   } catch (err) {
     // Notifications are non-critical — never let a delivery failure break
     // the underlying business action.
-    console.error('[truein] notification failed:', err.message);
+    console.error('[punchin] notification failed:', err.message);
     return null;
   }
 }

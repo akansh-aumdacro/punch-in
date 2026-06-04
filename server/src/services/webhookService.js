@@ -35,7 +35,7 @@ async function deliver(event, orgId, payload) {
       sendOne(hook, body).catch(() => {});
     }
   } catch (err) {
-    console.error('[truein] webhook lookup failed:', err.message);
+    console.error('[punchin] webhook lookup failed:', err.message);
   }
 }
 
@@ -43,8 +43,8 @@ async function sendOne(hook, body) {
   const signature = sign(hook.secret, body);
   const headers = {
     'Content-Type': 'application/json',
-    'X-Truein-Signature': `sha256=${signature}`,
-    'X-Truein-Webhook-Id': String(hook._id),
+    'X-PunchIn-Signature': `sha256=${signature}`,
+    'X-PunchIn-Webhook-Id': String(hook._id),
   };
   try {
     await axios.post(hook.url, body, { headers, timeout: DELIVERY_TIMEOUT_MS });
@@ -60,7 +60,7 @@ async function sendOne(hook, body) {
       { _id: hook._id },
       { $set: { lastDeliveryAt: new Date(), lastError: msg } }
     );
-    console.warn(`[truein] webhook delivery failed (${hook._id}):`, msg);
+    console.warn(`[punchin] webhook delivery failed (${hook._id}):`, msg);
   }
 }
 

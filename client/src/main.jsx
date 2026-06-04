@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { MotionConfig } from 'framer-motion';
 
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { AttendanceProvider } from './context/AttendanceContext.jsx';
@@ -23,6 +24,7 @@ import SiteFormPage from './pages/sites/SiteFormPage.jsx';
 import LiveDashboardPage from './pages/attendance/LiveDashboardPage.jsx';
 import AttendanceLogsPage from './pages/attendance/AttendanceLogsPage.jsx';
 import ClockInPage from './pages/attendance/ClockInPage.jsx';
+import FaceEnrollmentPage from './pages/face/FaceEnrollmentPage.jsx';
 import ShiftTemplatesPage from './pages/shifts/ShiftTemplatesPage.jsx';
 import ShiftSchedulerPage from './pages/shifts/ShiftSchedulerPage.jsx';
 import ShiftSwapPage from './pages/shifts/ShiftSwapPage.jsx';
@@ -42,6 +44,7 @@ import OrganizationSettings from './pages/settings/OrganizationSettings.jsx';
 import PolicySettings from './pages/settings/PolicySettings.jsx';
 import IntegrationsPage from './pages/settings/IntegrationsPage.jsx';
 import APIKeysPage from './pages/settings/APIKeysPage.jsx';
+import RolesPermissionsPage from './pages/settings/RolesPermissionsPage.jsx';
 import { dashboardPathForRole } from './utils/roleRedirect';
 import './index.css';
 
@@ -89,6 +92,7 @@ function Unauthorized() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
+      <MotionConfig reducedMotion="user">
       <AuthProvider>
         <AttendanceProvider>
           <BrowserRouter>
@@ -174,6 +178,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   <Route path="/agencies" element={<DashboardPlaceholder title="Agencies (UI coming soon)" />} />
 
                   <Route path="/attendance/clock-in" element={<ClockInPage />} />
+                  <Route path="/face/enroll" element={<FaceEnrollmentPage />} />
                   <Route
                     path="/attendance/live"
                     element={
@@ -306,15 +311,38 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                       </RoleRoute>
                     }
                   />
+                  <Route
+                    path="/settings/roles"
+                    element={
+                      <RoleRoute allow={['superadmin', 'hr']}>
+                        <RolesPermissionsPage />
+                      </RoleRoute>
+                    }
+                  />
                 </Route>
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-            <Toaster position="top-right" />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#1e293b',
+                  color: '#f1f5f9',
+                  border: '1px solid rgba(148,163,184,0.2)',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  boxShadow: '0 10px 30px -10px rgba(2,6,23,0.5)',
+                },
+                success: { iconTheme: { primary: '#6366f1', secondary: '#fff' } },
+                error: { iconTheme: { primary: '#f43f5e', secondary: '#fff' } },
+              }}
+            />
           </BrowserRouter>
         </AttendanceProvider>
       </AuthProvider>
+      </MotionConfig>
     </QueryClientProvider>
   </React.StrictMode>
 );
