@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,50 +7,63 @@ import { MotionConfig } from 'framer-motion';
 
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { AttendanceProvider } from './context/AttendanceContext.jsx';
-import LoginPage from './pages/auth/LoginPage.jsx';
-import RegisterPage from './pages/auth/RegisterPage.jsx';
+// Routing primitives + the app shell stay eager — they're tiny and needed on
+// every navigation. Everything below is code-split via React.lazy.
 import ProtectedRoute from './pages/auth/ProtectedRoute.jsx';
 import RoleRoute from './pages/auth/RoleRoute.jsx';
 import AppLayout from './components/layout/AppLayout.jsx';
-import SuperAdminDashboard from './pages/dashboard/SuperAdminDashboard.jsx';
-import HRDashboard from './pages/dashboard/HRDashboard.jsx';
-import SupervisorDashboard from './pages/dashboard/SupervisorDashboard.jsx';
-import WorkerDashboard from './pages/dashboard/WorkerDashboard.jsx';
-import AgencyDashboard from './pages/dashboard/AgencyDashboard.jsx';
-import WorkerListPage from './pages/workers/WorkerListPage.jsx';
-import WorkerFormPage from './pages/workers/WorkerFormPage.jsx';
-import SiteListPage from './pages/sites/SiteListPage.jsx';
-import SiteFormPage from './pages/sites/SiteFormPage.jsx';
-import LiveDashboardPage from './pages/attendance/LiveDashboardPage.jsx';
-import AttendanceLogsPage from './pages/attendance/AttendanceLogsPage.jsx';
-import ClockInPage from './pages/attendance/ClockInPage.jsx';
-import FaceEnrollmentPage from './pages/face/FaceEnrollmentPage.jsx';
-import ShiftTemplatesPage from './pages/shifts/ShiftTemplatesPage.jsx';
-import ShiftSchedulerPage from './pages/shifts/ShiftSchedulerPage.jsx';
-import ShiftSwapPage from './pages/shifts/ShiftSwapPage.jsx';
-import WeeklyOffPage from './pages/shifts/WeeklyOffPage.jsx';
-import TimesheetListPage from './pages/timesheets/TimesheetListPage.jsx';
-import TimesheetDetailPage from './pages/timesheets/TimesheetDetailPage.jsx';
-import TimesheetApprovalQueue from './pages/timesheets/TimesheetApprovalQueue.jsx';
-import LeaveTypesPage from './pages/leaves/LeaveTypesPage.jsx';
-import LeaveBalancePage from './pages/leaves/LeaveBalancePage.jsx';
-import LeaveRequestPage from './pages/leaves/LeaveRequestPage.jsx';
-import LeaveApprovalPage from './pages/leaves/LeaveApprovalPage.jsx';
-import LeaveHistoryPage from './pages/leaves/LeaveHistoryPage.jsx';
-import ReportsPage from './pages/reports/ReportsPage.jsx';
-import ScheduledReportsPage from './pages/reports/ScheduledReportsPage.jsx';
-import AnomalyFeedPage from './pages/ai/AnomalyFeedPage.jsx';
-import OrganizationSettings from './pages/settings/OrganizationSettings.jsx';
-import PolicySettings from './pages/settings/PolicySettings.jsx';
-import IntegrationsPage from './pages/settings/IntegrationsPage.jsx';
-import APIKeysPage from './pages/settings/APIKeysPage.jsx';
-import RolesPermissionsPage from './pages/settings/RolesPermissionsPage.jsx';
+import PageLoader from './components/PageLoader.jsx';
 import { dashboardPathForRole } from './utils/roleRedirect';
 import './index.css';
 
+// Lazily-loaded route pages — each becomes its own chunk, fetched on demand.
+const LoginPage = lazy(() => import('./pages/auth/LoginPage.jsx'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage.jsx'));
+const SuperAdminDashboard = lazy(() => import('./pages/dashboard/SuperAdminDashboard.jsx'));
+const HRDashboard = lazy(() => import('./pages/dashboard/HRDashboard.jsx'));
+const SupervisorDashboard = lazy(() => import('./pages/dashboard/SupervisorDashboard.jsx'));
+const WorkerDashboard = lazy(() => import('./pages/dashboard/WorkerDashboard.jsx'));
+const AgencyDashboard = lazy(() => import('./pages/dashboard/AgencyDashboard.jsx'));
+const WorkerListPage = lazy(() => import('./pages/workers/WorkerListPage.jsx'));
+const WorkerFormPage = lazy(() => import('./pages/workers/WorkerFormPage.jsx'));
+const SiteListPage = lazy(() => import('./pages/sites/SiteListPage.jsx'));
+const AgencyListPage = lazy(() => import('./pages/agencies/AgencyListPage.jsx'));
+const SiteFormPage = lazy(() => import('./pages/sites/SiteFormPage.jsx'));
+const LiveDashboardPage = lazy(() => import('./pages/attendance/LiveDashboardPage.jsx'));
+const AttendanceLogsPage = lazy(() => import('./pages/attendance/AttendanceLogsPage.jsx'));
+const ClockInPage = lazy(() => import('./pages/attendance/ClockInPage.jsx'));
+const FaceEnrollmentPage = lazy(() => import('./pages/face/FaceEnrollmentPage.jsx'));
+const ShiftTemplatesPage = lazy(() => import('./pages/shifts/ShiftTemplatesPage.jsx'));
+const ShiftSchedulerPage = lazy(() => import('./pages/shifts/ShiftSchedulerPage.jsx'));
+const ShiftSwapPage = lazy(() => import('./pages/shifts/ShiftSwapPage.jsx'));
+const WeeklyOffPage = lazy(() => import('./pages/shifts/WeeklyOffPage.jsx'));
+const TimesheetListPage = lazy(() => import('./pages/timesheets/TimesheetListPage.jsx'));
+const TimesheetDetailPage = lazy(() => import('./pages/timesheets/TimesheetDetailPage.jsx'));
+const TimesheetApprovalQueue = lazy(() => import('./pages/timesheets/TimesheetApprovalQueue.jsx'));
+const LeaveTypesPage = lazy(() => import('./pages/leaves/LeaveTypesPage.jsx'));
+const LeaveBalancePage = lazy(() => import('./pages/leaves/LeaveBalancePage.jsx'));
+const LeaveRequestPage = lazy(() => import('./pages/leaves/LeaveRequestPage.jsx'));
+const LeaveApprovalPage = lazy(() => import('./pages/leaves/LeaveApprovalPage.jsx'));
+const LeaveHistoryPage = lazy(() => import('./pages/leaves/LeaveHistoryPage.jsx'));
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage.jsx'));
+const ScheduledReportsPage = lazy(() => import('./pages/reports/ScheduledReportsPage.jsx'));
+const AnomalyFeedPage = lazy(() => import('./pages/ai/AnomalyFeedPage.jsx'));
+const OrganizationSettings = lazy(() => import('./pages/settings/OrganizationSettings.jsx'));
+const PolicySettings = lazy(() => import('./pages/settings/PolicySettings.jsx'));
+const IntegrationsPage = lazy(() => import('./pages/settings/IntegrationsPage.jsx'));
+const APIKeysPage = lazy(() => import('./pages/settings/APIKeysPage.jsx'));
+const RolesPermissionsPage = lazy(() => import('./pages/settings/RolesPermissionsPage.jsx'));
+
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      // Serve cached data instantly on revisit/navigation; refetch in the
+      // background after 30s instead of on every mount.
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+    },
   },
 });
 
@@ -96,6 +109,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <AttendanceProvider>
           <BrowserRouter>
+            <Suspense fallback={<PageLoader full />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -175,7 +189,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                     }
                   />
 
-                  <Route path="/agencies" element={<DashboardPlaceholder title="Agencies (UI coming soon)" />} />
+                  <Route
+                    path="/agencies"
+                    element={
+                      <RoleRoute allow={['superadmin', 'hr', 'supervisor', 'agency_admin']}>
+                        <AgencyListPage />
+                      </RoleRoute>
+                    }
+                  />
 
                   <Route path="/attendance/clock-in" element={<ClockInPage />} />
                   <Route path="/face/enroll" element={<FaceEnrollmentPage />} />
@@ -324,6 +345,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
             <Toaster
               position="top-right"
               toastOptions={{

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 
 const Agency = require('../models/Agency');
@@ -22,7 +23,23 @@ exports.getAllAgencies = async (req, res, next) => {
     }
 
     const agencies = await Agency.find(filter).sort({ name: 1 }).lean();
-    res.json({ items: agencies });
+
+    // Attach a live worker count per agency in a single aggregation.
+    const counts = await User.aggregate([
+      {
+        $match: {
+          org_id: new mongoose.Types.ObjectId(req.user.orgId),
+          agency_id: { $ne: null },
+          deletedAt: null,
+        },
+      },
+      { $group: { _id: '$agency_id', count: { $sum: 1 } } },
+    ]);
+    const countMap = Object.fromEntries(counts.map((c) => [String(c._id), c.count]));
+
+    res.json({
+      items: agencies.map((a) => ({ ...a, workerCount: countMap[String(a._id)] || 0 })),
+    });
   } catch (err) {
     next(err);
   }

@@ -2,11 +2,16 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
+
+// gzip all responses — large JSON payloads (attendance logs, reports) shrink
+// ~70% over the wire. Must precede the routes.
+app.use(compression());
 
 app.use(
   cors({
